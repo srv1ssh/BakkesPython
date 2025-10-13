@@ -3,17 +3,28 @@
 #include "pybind11/embed.h"
 namespace py = pybind11;
 
+string moduleBasePath = "bakkesmod.data.python.";
+
+struct PyModule
+{
+	string name;
+	py::module mod;
+	PyModule(string _name)
+	{
+		name = _name;
+		mod = py::module::import((moduleBasePath + _name).c_str());
+	}
+};
+
 class PythonPlugin final : public BakkesMod::Plugin::BakkesModPlugin
 {
 public:
 	void onLoad() override;
 	void onUnload() override;
 
-	void onTick(string eventName);
-
 private:
-	//Default constructed - initializes interpeter, uninit on deconstruct.
 	void ReloadModule(vector<string> params);
+	//Default constructed - initializes interpeter, uninit on deconstruct.
 	py::scoped_interpreter interpreter;
-	py::module pluginModule;
+	vector<std::shared_ptr<PyModule>> pyModules;
 };
